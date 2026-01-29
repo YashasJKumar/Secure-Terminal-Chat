@@ -19,7 +19,8 @@ from cryptography.exceptions import InvalidSignature
 class CryptoManager:
     """Manages all cryptographic operations for the chat application."""
     
-    # RFC 3526 Group 14 (2048-bit MODP Group)
+    # RFC 3526 Group 14 (2048-bit MODP Group) - Section 3
+    # Reference: https://www.rfc-editor.org/rfc/rfc3526.html#section-3
     # This is a standard, well-vetted DH parameter set used industry-wide
     # All peers use the same parameters to ensure compatibility
     DH_PARAMETER_NUMBERS = dh.DHParameterNumbers(
@@ -125,7 +126,7 @@ class CryptoManager:
             # Compute shared secret
             shared_secret = self.dh_private_key.exchange(peer_public_key)
         except Exception as e:
-            raise ValueError(f"Error computing shared key: {e}. This may indicate DH parameter mismatch.")
+            raise ValueError(f"Error computing shared key: {e}. This may indicate DH parameter mismatch.") from e
         
         # Derive AES-256 session key using PBKDF2
         # Note: The static salt is acceptable here because:
