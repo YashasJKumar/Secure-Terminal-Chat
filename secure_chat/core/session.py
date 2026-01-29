@@ -6,6 +6,7 @@ import socket
 import json
 import time
 import threading
+import traceback
 from enum import Enum
 from typing import Optional, Callable
 from dataclasses import dataclass
@@ -335,6 +336,7 @@ class SessionManager:
             return True
         except Exception as e:
             print(f"Error in key exchange: {e}")
+            print(f"Traceback: {traceback.format_exc()}")  # Show full error for debugging
             return False
     
     def send_message(self, message: str) -> bool:
