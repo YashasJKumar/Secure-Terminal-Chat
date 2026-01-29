@@ -53,6 +53,8 @@ class NetworkManager:
         """
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Bind to all interfaces (0.0.0.0) to accept connections from any peer on local network
+        # This is intentional for P2P chat on trusted local networks
         self.tcp_socket.bind(('0.0.0.0', self.tcp_port))
         self.tcp_socket.listen(5)
         
@@ -95,6 +97,8 @@ class NetworkManager:
         """
         self.discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Bind to all interfaces ('') to receive UDP broadcasts from any peer on local network
+        # This is required for peer discovery on trusted local networks
         self.discovery_socket.bind(('', self.DISCOVERY_PORT))
         
         # Start discovery responder thread
