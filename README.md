@@ -237,7 +237,8 @@ This application protects against:
 #### Diffie-Hellman (2048-bit)
 - **Purpose**: Session key establishment
 - **Usage**: Generate shared secret for AES key derivation
-- **Parameters**: 2048-bit prime, generator=2
+- **Parameters**: RFC 3526 Group 14 (standardized 2048-bit MODP Group)
+- **Note**: All peers use the same standardized parameters to ensure compatibility
 
 #### AES-256-GCM
 - **Purpose**: Message encryption and authentication

@@ -16,9 +16,10 @@ This document provides a security assessment of the Secure Terminal Chat applica
 - **Status**: ✅ Implemented and tested
 
 #### Key Exchange
-- **Protocol**: Diffie-Hellman (2048-bit)
+- **Protocol**: Diffie-Hellman with RFC 3526 Group 14 parameters (2048-bit MODP Group)
 - **Authentication**: RSA-2048 signatures
 - **Key Derivation**: PBKDF2-HMAC-SHA256 with 100,000 iterations
+- **Compatibility**: All peers use the same standardized DH parameters
 - **Status**: ✅ Implemented and tested
 
 #### Digital Signatures
@@ -172,7 +173,7 @@ All alerts are intentional design choices properly documented and necessary for 
 - **AES-256**: Industry standard, quantum-resistant for symmetric encryption
 - **RSA-2048**: Adequate for current security needs (2030+ according to NIST)
 - **SHA-256**: Collision-resistant, widely trusted
-- **DH-2048**: Provides forward secrecy, adequate for current threats
+- **DH-2048**: Provides forward secrecy using RFC 3526 Group 14 (standardized parameters ensure compatibility)
 
 ### Implementation
 - All cryptographic operations use the Python `cryptography` library

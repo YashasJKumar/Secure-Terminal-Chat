@@ -334,7 +334,9 @@ class SessionManager:
             
             return True
         except Exception as e:
+            import traceback
             print(f"Error in key exchange: {e}")
+            print(f"Traceback: {traceback.format_exc()}")  # Show full error for debugging
             return False
     
     def send_message(self, message: str) -> bool:
