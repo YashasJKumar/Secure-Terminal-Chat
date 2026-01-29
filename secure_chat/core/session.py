@@ -10,6 +10,9 @@ from enum import Enum
 from typing import Optional, Callable
 from dataclasses import dataclass
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+
 from .crypto import CryptoManager
 from .network import NetworkManager, PeerInfo
 
@@ -157,7 +160,6 @@ class SessionManager:
             signature = bytes.fromhex(invitation['signature'])
             
             # Load peer's public key
-            from cryptography.hazmat.primitives import serialization
             peer_public_key = serialization.load_pem_public_key(
                 peer_public_key_pem,
                 backend=default_backend()
@@ -250,9 +252,6 @@ class SessionManager:
             True on success
         """
         try:
-            from cryptography.hazmat.primitives import serialization
-            from cryptography.hazmat.backends import default_backend
-            
             # Generate DH keypair
             dh_public_key = self.crypto.generate_dh_keypair()
             

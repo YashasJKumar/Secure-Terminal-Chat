@@ -11,7 +11,7 @@ from typing import Tuple, Optional
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding, dh
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 
@@ -109,7 +109,7 @@ class CryptoManager:
         shared_secret = self.dh_private_key.exchange(peer_public_key)
         
         # Derive AES-256 session key using PBKDF2
-        kdf = PBKDF2(
+        kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,  # 256 bits for AES-256
             salt=b'secure_chat_salt',  # In production, use random salt exchanged during handshake
