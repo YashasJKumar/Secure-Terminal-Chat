@@ -65,6 +65,7 @@ class SessionManager:
         self.on_invitation_received: Optional[Callable[[str, str], None]] = None
         self.running = False
         self.receive_thread: Optional[threading.Thread] = None
+        self.rekey_lock = threading.Lock()  # Lock to prevent concurrent rekeys
     
     def send_invitation(self, peer: PeerInfo) -> bool:
         """
@@ -177,6 +178,14 @@ class SessionManager:
             # Check timestamp (within 60 seconds)
             if abs(time.time() - timestamp) > 60:
                 return False
+            
+            # Check if there's already a pending invitation
+            if hasattr(self, 'pending_invitation'):
+                # Close the old socket
+                try:
+                    self.pending_invitation['socket'].close()
+                except:
+                    pass
             
             # Callback to user for acceptance
             if self.on_invitation_received:
@@ -406,10 +415,14 @@ class SessionManager:
     
     def _perform_rekey(self):
         """Perform session key rotation."""
-        if not self.session or self.session.state != SessionState.CONNECTED:
-            return
+        # Try to acquire the lock, return if already in progress
+        if not self.rekey_lock.acquire(blocking=False):
+            return  # Rekey already in progress
         
         try:
+            if not self.session or self.session.state != SessionState.CONNECTED:
+                return
+            
             # Send rekey request
             request = {'type': 'rekey_request'}
             self.network.send_message(
@@ -424,6 +437,8 @@ class SessionManager:
             self._perform_key_exchange(initiator=True)
         except Exception as e:
             print(f"Error during rekey: {e}")
+        finally:
+            self.rekey_lock.release()
     
     def _handle_rekey_request(self):
         """Handle incoming rekey request."""
@@ -432,6 +447,14 @@ class SessionManager:
         
         # Perform new key exchange
         self._perform_key_exchange(initiator=False)
+    
+    def request_key_rotation(self):
+        """
+        Public method to request key rotation.
+        This should be used instead of calling _perform_rekey directly.
+        """
+        if self.session and self.session.state == SessionState.CONNECTED:
+            threading.Thread(target=self._perform_rekey, daemon=True).start()
     
     def disconnect(self):
         """Disconnect from current session."""

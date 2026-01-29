@@ -144,47 +144,49 @@ class NetworkManager:
         udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         udp_socket.settimeout(0.5)
         
-        # Send discovery broadcast
         try:
-            udp_socket.sendto(
-                self.DISCOVERY_MESSAGE,
-                ('<broadcast>', self.DISCOVERY_PORT)
-            )
-        except Exception as e:
-            print(f"Error sending discovery broadcast: {e}")
-            udp_socket.close()
-            return []
-        
-        # Collect responses
-        start_time = time.time()
-        while time.time() - start_time < timeout:
+            # Send discovery broadcast
             try:
-                data, address = udp_socket.recvfrom(4096)
-                
-                if data.startswith(self.RESPONSE_MESSAGE):
-                    response_json = data[len(self.RESPONSE_MESSAGE):].decode('utf-8')
-                    response = json.loads(response_json)
-                    
-                    # Don't add ourselves
-                    if response['peer_id'] != self.peer_id:
-                        peer = PeerInfo(
-                            peer_id=response['peer_id'],
-                            address=address[0],
-                            port=response['tcp_port'],
-                            public_key=response['public_key'].encode('utf-8')
-                        )
-                        
-                        # Check if peer already discovered
-                        if not any(p.peer_id == peer.peer_id for p in self.discovered_peers):
-                            self.discovered_peers.append(peer)
-                            if self.on_peer_discovered:
-                                self.on_peer_discovered(peer)
-            except socket.timeout:
-                continue
+                udp_socket.sendto(
+                    self.DISCOVERY_MESSAGE,
+                    ('<broadcast>', self.DISCOVERY_PORT)
+                )
             except Exception as e:
-                print(f"Error receiving discovery response: {e}")
+                print(f"Error sending discovery broadcast: {e}")
+                return []
+            
+            # Collect responses
+            start_time = time.time()
+            while time.time() - start_time < timeout:
+                try:
+                    data, address = udp_socket.recvfrom(4096)
+                    
+                    if data.startswith(self.RESPONSE_MESSAGE):
+                        response_json = data[len(self.RESPONSE_MESSAGE):].decode('utf-8')
+                        response = json.loads(response_json)
+                        
+                        # Don't add ourselves
+                        if response['peer_id'] != self.peer_id:
+                            peer = PeerInfo(
+                                peer_id=response['peer_id'],
+                                address=address[0],
+                                port=response['tcp_port'],
+                                public_key=response['public_key'].encode('utf-8')
+                            )
+                            
+                            # Check if peer already discovered
+                            if not any(p.peer_id == peer.peer_id for p in self.discovered_peers):
+                                self.discovered_peers.append(peer)
+                                if self.on_peer_discovered:
+                                    self.on_peer_discovered(peer)
+                except socket.timeout:
+                    continue
+                except Exception as e:
+                    print(f"Error receiving discovery response: {e}")
+        finally:
+            # Always close the socket
+            udp_socket.close()
         
-        udp_socket.close()
         return self.discovered_peers
     
     def connect_to_peer(self, address: str, port: int) -> Optional[socket.socket]:

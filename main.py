@@ -285,8 +285,7 @@ class SecureChatApp:
         if self.session and self.session.session:
             if self.session.session.state == SessionState.CONNECTED:
                 self.ui.add_system_message("Initiating key rotation...", "yellow")
-                # The session manager will handle the rekey
-                self.session._perform_rekey()
+                self.session.request_key_rotation()
                 self.logger.log_key_rotation(self.session.session.peer_id)
             else:
                 self.ui.show_error("Not in connected state")
