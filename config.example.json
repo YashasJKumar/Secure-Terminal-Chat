@@ -1,0 +1,9 @@
+{
+  "tcp_port": 0,
+  "discovery_port": 50000,
+  "discovery_timeout": 2.0,
+  "session_timeout": 1800,
+  "rekey_message_count": 100,
+  "rekey_time_seconds": 1800,
+  "max_message_history": 100
+}
